@@ -1,14 +1,11 @@
 'use client';
-import Image from 'next/image';
+
+import { useState, useEffect } from 'react';
 import { generatePerson } from './generatePerson';
 
-// =====================================================
-// YOUR BUSINESS CARD DATA
-// =====================================================
-// Each object is one business card. Add more below!
-// Next week we'll move this data to a real database.
-// =====================================================
-
+// =============================================================
+// 1. DATA & INTERFACES (Global Scope)
+// =============================================================
 interface Card {
   name: string;
   title: string;
@@ -56,65 +53,94 @@ const cards: Card[] = [
     website: 'https://rjonesBIZ.com',
     category: 'Business',
   },
+  // ADD 4 MORE CARDS HERE TO REACH THE 8-CARD REQUIREMENT!
 ];
 
-// Color map for category badges
 const categoryColors: Record<string, string> = {
   Technology: 'bg-blue-100 text-blue-800',
   Health: 'bg-green-100 text-green-800',
   Finance: 'bg-amber-100 text-amber-800',
+  Business: 'bg-indigo-100 text-indigo-800',
   Restaurant: 'bg-orange-100 text-orange-800',
   Education: 'bg-purple-100 text-purple-800',
   'Real Estate': 'bg-teal-100 text-teal-800',
   Services: 'bg-gray-100 text-gray-800',
-  Fitness: 'bg-rose-100 text-rose-800',
 };
-export default function Home() {
-  return (
-    <div>
-      <h1 className="text-3xl font-bold text-gray-800 mb-2">
-        Business Card Directory
-      </h1>
-      <p className="text-gray-500 mb-6">
-        {cards.length} local businesses and professionals
-      </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+// =============================================================
+// 2. THE PAGE COMPONENT
+// =============================================================
+export default function Home() {
+  // Use state to wait for the browser (prevents "document is not defined" error)
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  return (
+    <div className="max-w-6xl mx-auto p-6">
+      <header className="mb-10">
+        <h1 className="text-4xl font-extrabold text-gray-900 mb-2">
+          Business Card Directory
+        </h1>
+        <p className="text-lg text-gray-600">
+          Connecting {cards.length} local professionals and services.
+        </p>
+      </header>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {cards.map((card, index) => (
           <div
             key={index}
-            className="bg-white rounded-lg shadow-sm border p-6 flex gap-4 hover:shadow-md transition-shadow"
+            className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
           >
-            {/* Person - generated from the person's name */}
-            <Image
-              src={generatePerson(card.name, 200)}
-              alt={card.name}
-              width={64}  // Equivalent to w-16 (16 * 4px)
-              height={64}
-              className="w-16 h-16 rounded-full flex-shrink-0"
-            />
+            <div className="flex items-center gap-4 mb-6">
+              {/* Avatar Logic */}
+              <div className="w-16 h-16 rounded-full bg-gray-50 flex-shrink-0 overflow-hidden ring-4 ring-gray-50">
+                {isClient ? (
+                  <img
+                    src={generatePerson(card.name, 200)}
+                    alt={card.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-200 animate-pulse" />
+                )}
+              </div>
 
-            {/* Card content */}
-            <div>
-              <h2 className="text-xl font-bold text-gray-800">{card.name}</h2>
-              <p className="text-blue-600 font-medium">{card.title}</p>
-              <p className="text-gray-500 text-sm mb-3">{card.company}</p>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 leading-tight">
+                  {card.name}
+                </h2>
+                <p className="text-blue-600 font-medium text-sm">{card.title}</p>
+              </div>
+            </div>
 
-              <p className="text-gray-600 text-sm">{card.phone}</p>
-              <p className="text-gray-600 text-sm">{card.email}</p>
-
+            <div className="space-y-2 text-gray-600 text-sm mb-6 flex-grow">
+              <p className="font-semibold text-gray-800 uppercase tracking-tight italic">
+                {card.company}
+              </p>
+              <div className="flex flex-col gap-1">
+                <span>📞 {card.phone}</span>
+                <span className="truncate">📧 {card.email}</span>
+              </div>
+              
               {card.website && (
                 <a
                   href={card.website}
                   target="_blank"
-                  className="text-blue-600 hover:underline text-sm"
+                  rel="noopener noreferrer"
+                  className="block mt-2 text-blue-500 hover:underline font-medium"
                 >
-                  {card.website}
+                  Visit Website →
                 </a>
               )}
+            </div>
 
+            <div className="pt-4 border-t border-gray-50">
               <span
-                className={`inline-block mt-3 text-xs px-2 py-1 rounded ${
+                className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
                   categoryColors[card.category] || 'bg-gray-100 text-gray-800'
                 }`}
               >
